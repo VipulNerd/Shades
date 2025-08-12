@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Shades</string>
+    <string name = "login">LogIn</string>
+    <string name = "signup">SignIn</string>
+    <string name = "logId">Login Email</string>
+    <string name = "logPass">Login Password</string>
+    <string name = "signId">Sign In Email</string>
+    <string name = "signPass">Sign In Password</string>
 </resources>
