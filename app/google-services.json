@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "739831824004",
+    "project_id": "shases-auth-uni",
+    "storage_bucket": "shases-auth-uni.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:739831824004:android:cc672f8b939e2052828cd1",
+        "android_client_info": {
+          "package_name": "com.example.shades"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDV_ozZQJOpQW56ikCpV4EHejdF3X4xc74"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
