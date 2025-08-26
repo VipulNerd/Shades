@@ -26,8 +26,11 @@ fun Navigation() {
 
         composable(ScreenName.HomeScreen.route){
             HomeScreen(
+                navController = navController
             )
         }
+
+
     }
 
 }

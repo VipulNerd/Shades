@@ -12,10 +12,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.example.shades.MyAppNavigation.ScreenName
 import com.example.shades.cards.PostCard
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    navController: NavController
+) {
     val posts = listOf(
         Triple("Vipul", null, "Hello this is my first post"),
         Triple("John", null, "Enjoying the sunny day!"),
@@ -34,7 +38,7 @@ fun HomeScreen() {
         }
 
         Button(
-            onClick = { /*TODO*/ },
+            onClick = { navController.navigate(ScreenName.PostScreen.route) },
             modifier = Modifier.align(Alignment.BottomEnd).padding(10.dp)
         ) {
             Text("Post")
