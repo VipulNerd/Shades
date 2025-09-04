@@ -1,6 +1,5 @@
 
 import androidx.lifecycle.ViewModel
-import com.example.shades.data.AppUser
 import com.example.shades.utils.generateRandomName
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot

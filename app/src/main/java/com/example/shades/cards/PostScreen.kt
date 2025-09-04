@@ -1,5 +1,6 @@
 package com.example.shades.cards
 
+import AuthViewModel
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -16,9 +17,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -32,9 +36,11 @@ import kotlinx.coroutines.launch
 @Composable
 fun PostScreen(
     navController: NavController,
-    onPost: (String, List<Uri>) -> Unit = { _, _ -> },
+    authViewModel: AuthViewModel = viewModel(),
     viewModel: PostViewModel = viewModel()
 ){
+    val currentUsername by authViewModel.currentUser.collectAsState()
+    val username = currentUsername?.displayName ?: "Anonymous"
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -54,7 +60,7 @@ fun PostScreen(
     val coroutineScope= rememberCoroutineScope()
 
     Scaffold(
-        snackbarHost = { androidx.compose.material3.SnackbarHost(snackBarHostState) }
+        snackbarHost = { SnackbarHost(snackBarHostState) }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             OutlinedTextField(
@@ -111,13 +117,22 @@ fun PostScreen(
             }
             Spacer(modifier = Modifier.height(32.dp))
             Button(
-                {
-                    viewModel.submitPost(onPost)
-                    coroutineScope.launch{
-                        snackBarHostState.showSnackbar("Post uploaded successfully!")
-                    }
-                    navController.navigate(ScreenName.HomeScreen.route){
-                        popUpTo(ScreenName.HomeScreen.route){inclusive = true}
+                onClick = {
+                    coroutineScope.launch {
+                        viewModel.submitPost(username) { success, errorMsg ->
+                            if (success) {
+                                coroutineScope.launch {
+                                    snackBarHostState.showSnackbar("Post uploaded successfully!")
+                                    navController.navigate(ScreenName.HomeScreen.route) {
+                                        popUpTo(ScreenName.HomeScreen.route) { inclusive = true }
+                                    }
+                                }
+                            } else {
+                                coroutineScope.launch {
+                                    snackBarHostState.showSnackbar(errorMsg ?: "Failed to upload post!")
+                                }
+                            }
+                        }
                     }
                 },
                 enabled = viewModel.description.isNotEmpty() || viewModel.mediaUris.isNotEmpty()

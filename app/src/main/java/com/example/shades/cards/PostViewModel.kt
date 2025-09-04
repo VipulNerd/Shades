@@ -5,10 +5,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.example.shades.data.PostRepository
-import kotlin.text.trim
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
+import kotlinx.coroutines.tasks.await
+import java.util.*
 
-class PostViewModel: ViewModel() {
+class PostViewModel : ViewModel() {
     var description by mutableStateOf("")
         private set
     var mediaUris by mutableStateOf<List<Uri>>(emptyList())
@@ -16,28 +18,47 @@ class PostViewModel: ViewModel() {
     val wordCount: Int
         get() = description.trim().split("\\s+".toRegex()).filter { it.isNotEmpty() }.size
 
+    private val db = FirebaseFirestore.getInstance()
+
     fun onDescriptionChange(newDescription: String) {
         val newWordCount = newDescription.trim().split("\\s+".toRegex()).filter { it.isNotEmpty() }.size
-        if(newWordCount <= 200) {
+        if (newWordCount <= 200) {
             description = newDescription
         }
     }
 
-    fun addMediaUris(newMediaUris: Uri) {
-        mediaUris = mediaUris + newMediaUris
+    fun addMediaUris(newMediaUri: Uri) {
+        mediaUris = mediaUris + newMediaUri
     }
 
-    fun submitPost(onPost: (String, List<Uri>) -> Unit) {
-        val post = Post("Vipul", mediaUris, description)
-        PostRepository.addPost(post)
-        onPost(description, mediaUris)
-        description = ""
-        mediaUris = emptyList()
+    suspend fun submitPost(username: String, callback: (success: Boolean, errorMsg: String?) -> Unit) {
+        try {
+            val postId = UUID.randomUUID().toString()
+            val postData = hashMapOf(
+                "username" to username,
+                "caption" to description,
+                "mediaUris" to mediaUris.map { it.toString() },
+                "timestamp" to System.currentTimeMillis()
+            )
+
+            db.collection("posts")
+                .document(postId)
+                .set(postData, SetOptions.merge())
+                .await() // Wait for completion
+
+            // Reset state
+            description = ""
+            mediaUris = emptyList()
+            callback(true, null)
+        } catch (e: Exception) {
+            callback(false, e.message)
+        }
     }
 
     data class Post(
-        val username: String,
-        val mediaUris: List<Uri> = emptyList(),
-        val caption: String? = null
+        val username: String = "",
+        val mediaUris: List<String> = emptyList(),
+        val caption: String? = null,
+        val timestamp: Long = System.currentTimeMillis()
     )
 }
