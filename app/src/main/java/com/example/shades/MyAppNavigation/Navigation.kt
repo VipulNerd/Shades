@@ -7,6 +7,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.shades.HomeScreen
 import com.example.shades.authentication.LogIn
 import com.example.shades.authentication.SignUp
+import com.example.shades.cards.PostScreen
 
 @Composable
 fun Navigation() {
@@ -30,7 +31,9 @@ fun Navigation() {
             )
         }
 
-
+        composable(ScreenName.PostScreen.route) {
+            PostScreen(navController)
+        }
     }
 
 }

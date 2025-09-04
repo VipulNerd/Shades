@@ -9,30 +9,36 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.shades.MyAppNavigation.ScreenName
 import com.example.shades.cards.PostCard
+import com.example.shades.data.PostRepository
 
 @Composable
 fun HomeScreen(
     navController: NavController
 ) {
-    val posts = listOf(
-        Triple("Vipul", null, "Hello this is my first post"),
-        Triple("John", null, "Enjoying the sunny day!"),
-        Triple("Amit", null, null) // image-only or text-only
-    )
+    val posts by PostRepository.posts.collectAsState()
+    Box(
+        modifier = Modifier
+            .fillMaxSize(1f)
+            .padding(50.dp)
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    ) {
         LazyColumn {
-            items(posts) { (username, image, caption) ->
+            items(posts) { post ->
                 PostCard(
-                    username = username,
-                    image = image,
-                    caption = caption
+                    username = post.username,
+                    image = post.mediaUris.firstOrNull() as Painter?,
+                    caption = post.caption
                 )
             }
         }

@@ -1,6 +1,8 @@
 package com.example.shades.cards
 
 import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,75 +15,116 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import coil.compose.rememberAsyncImagePainter
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.example.shades.MyAppNavigation.ScreenName
+import kotlinx.coroutines.launch
 
 @Composable
 fun PostScreen(
-    onPost: (String, List<Uri>) -> Unit={_,_->}
+    navController: NavController,
+    onPost: (String, List<Uri>) -> Unit = { _, _ -> },
+    viewModel: PostViewModel = viewModel()
 ){
-    var description by remember { mutableStateOf("") }
-    var mediaUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { viewModel.addMediaUris(it) }
+    }
+    val videoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { viewModel.addMediaUris(it) }
+    }
+    val audioPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { viewModel.addMediaUris(it) }
+    }
+    val wordCount = viewModel.wordCount
+    val snackBarHostState = remember { SnackbarHostState() }
+    val coroutineScope= rememberCoroutineScope()
 
-    val wordCount = description.trim().split("\\s+".toRegex()).filter { it.isNotEmpty() }.size
-    Column {
-        OutlinedTextField(
-            value = description,
-            onValueChange = {newText->
-                val newWordCnt = newText.trim().split("\\+s".toRegex()).filter { it.isNotEmpty() }.size
-                if(newWordCnt <= 200){
-                    description = newText
+    Scaffold(
+        snackbarHost = { androidx.compose.material3.SnackbarHost(snackBarHostState) }
+    ) { innerPadding ->
+        Column(modifier = Modifier.padding(innerPadding)) {
+            OutlinedTextField(
+                value = viewModel.description,
+                onValueChange = { newText ->
+                    viewModel.onDescriptionChange(newText)
+                },
+                label = { Text("What's on your mind? (max 200 words)") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = false,
+                maxLines = 6
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            if (viewModel.mediaUris.isNotEmpty()) {
+                LazyColumn {
+                    items(viewModel.mediaUris.size) { index ->
+                        val uri = viewModel.mediaUris[index]
+                        when {
+                            uri.toString().contains("image") -> {
+                                Image(
+                                    painter = rememberAsyncImagePainter(uri),
+                                    contentDescription = "Selected media",
+                                    modifier = Modifier
+                                        .size(100.dp)
+                                        .padding(4.dp)
+                                )
+                            }
+
+                            uri.toString().contains("video") -> {
+                                Text("Video selected: $uri")
+                            }
+
+                            else -> {
+                                Text("Audio selected: $uri")
+                            }
+                        }
+                    }
                 }
-            },
-            label = { Text("What's on your mind? (max 200 words)") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = false,
-            maxLines = 6
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        if(mediaUris.isNotEmpty()){
-            LazyColumn {
-                items(mediaUris.size){index ->
-                    val uri = mediaUris[index]
-                    Image(
-                        painter = rememberAsyncImagePainter(uri),
-                        contentDescription = "Selected media",
-                        modifier = Modifier
-                            .size(100.dp)
-                            .padding(4.dp)
-                    )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                modifier = Modifier,
+                Arrangement.SpaceBetween
+            ) {
+                Button(onClick = { imagePickerLauncher.launch("image/*") }) {
+                    Text("image")
+                }
+                Button(onClick = { videoPickerLauncher.launch("video/*") }) {
+                    Text("video")
+                }
+                Button(onClick = { audioPickerLauncher.launch("audio/*") }) {
+                    Text("audio")
                 }
             }
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        Row(
-            modifier = Modifier,
-            Arrangement.SpaceBetween
-        ){
-            Button(onClick = {}){
-                Text("image")
+            Spacer(modifier = Modifier.height(32.dp))
+            Button(
+                {
+                    viewModel.submitPost(onPost)
+                    coroutineScope.launch{
+                        snackBarHostState.showSnackbar("Post uploaded successfully!")
+                    }
+                    navController.navigate(ScreenName.HomeScreen.route){
+                        popUpTo(ScreenName.HomeScreen.route){inclusive = true}
+                    }
+                },
+                enabled = viewModel.description.isNotEmpty() || viewModel.mediaUris.isNotEmpty()
+            ) {
+                Text("Post")
             }
-            Button(onClick = {}){
-                Text("video")
-            }
-            Button(onClick = {}){
-                Text("audio")
-            }
-        }
-        Spacer(modifier = Modifier.height(32.dp))
-        Button(
-            {onPost(description, mediaUris)},
-            enabled = description.isNotEmpty()||mediaUris.isNotEmpty()
-        ){
-            Text("Post")
         }
     }
 }
-
