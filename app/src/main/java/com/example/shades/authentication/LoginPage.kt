@@ -1,78 +1,104 @@
 package com.example.shades.authentication
 
+import AuthViewModel
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.shades.R
 import com.example.shades.MyAppNavigation.ScreenName
+import kotlinx.coroutines.launch
 
 @Composable
-
 fun LogIn(
-    navController: NavController
-){
-    var id by remember  { mutableStateOf("")}
-    var pass by remember  {mutableStateOf("")}
+    navController: NavController,
+    viewModel: AuthViewModel = viewModel()
+) {
+    var id by remember { mutableStateOf("") }
+    var pass by remember { mutableStateOf("") }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .safeContentPadding()
-            .verticalScroll(rememberScrollState())
-            .statusBarsPadding(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        EmailEntry(
-            email = R.string.logId,
-            value = id,
-            onValueChange = {id = it},
-            keyboardOptions = KeyboardOptions.Default.copy(
-                keyboardType = KeyboardType.Email
-            ),
-            modifier = Modifier.fillMaxWidth()
+    val loginSuccess by viewModel.loginSuccess.collectAsState()
+    val error by viewModel.error.collectAsState()
 
-        )
-        Spacer(modifier = Modifier.padding(10.dp))
-        PassEntry(
-            pass = R.string.logPass,
-            value = pass,
-            onValueChange = {pass = it},
-            keyboardOptions = KeyboardOptions.Default.copy(
-                keyboardType = KeyboardType.Password
-            ),
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.padding(10.dp))
-        FilledTonalButton(onClick = {navController.navigate(ScreenName.HomeScreen.route)}) {
-            Text(text = stringResource(id = R.string.login))
+    val snackBarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
+    // Navigate to HomeScreen if login succeeds
+    LaunchedEffect(loginSuccess) {
+        if (loginSuccess) {
+            navController.navigate(ScreenName.HomeScreen.route) {
+                popUpTo(ScreenName.LoginPage.route) { inclusive = true }
+                launchSingleTop = true
+            }
         }
-        Spacer(modifier = Modifier.padding(10.dp))
-        FilledTonalButton(onClick = {navController.navigate(ScreenName.SignupPage.route)}) {
-            Text(text = stringResource(id = R.string.signup))
+    }
+
+    // Show error snackbar
+    LaunchedEffect(error) {
+        error?.let {
+            coroutineScope.launch {
+                snackBarHostState.showSnackbar(it)
+            }
+        }
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            EmailEntry(
+                email = R.string.logId,
+                value = id,
+                onValueChange = { id = it },
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            PassEntry(
+                pass = R.string.logPass,
+                value = pass,
+                onValueChange = { pass = it },
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Password),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            FilledTonalButton(
+                onClick = { viewModel.login(id, pass) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = "Login")
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            FilledTonalButton(
+                onClick = { navController.navigate(ScreenName.SignupPage.route) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = "Signup")
+            }
         }
     }
 }
@@ -84,14 +110,14 @@ fun EmailEntry(
     onValueChange: (String) -> Unit,
     keyboardOptions: KeyboardOptions,
     modifier: Modifier
-){
+) {
     TextField(
-        label = {Text(stringResource(id = email))},
+        label = { Text(text = stringResource(id = email)) },
         value = value,
         onValueChange = onValueChange,
         keyboardOptions = keyboardOptions,
         singleLine = true,
-        modifier = modifier,
+        modifier = modifier
     )
 }
 
@@ -102,13 +128,13 @@ fun PassEntry(
     onValueChange: (String) -> Unit,
     keyboardOptions: KeyboardOptions,
     modifier: Modifier
-){
+) {
     TextField(
-        label = {Text(stringResource(id = pass))},
+        label = { Text(text = stringResource(id = pass)) },
         value = value,
         onValueChange = onValueChange,
         keyboardOptions = keyboardOptions,
         singleLine = true,
-        modifier = modifier,
+        modifier = modifier
     )
 }
