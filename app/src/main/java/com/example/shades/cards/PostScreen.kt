@@ -50,7 +50,6 @@ fun PostScreen(
     ) { uri: Uri? ->
         uri?.let { viewModel.addMediaUris(it) }
     }
-    val wordCount = viewModel.wordCount
     val snackBarHostState = remember { SnackbarHostState() }
     val coroutineScope= rememberCoroutineScope()
 
