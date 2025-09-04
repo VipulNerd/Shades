@@ -22,7 +22,7 @@ class AuthViewModel : ViewModel() {
 
     // Flags to trigger navigation immediately
     private val _signupSuccess = MutableStateFlow(false)
-    val signupSuccess: StateFlow<Boolean> = _signupSuccess
+
 
     private val _loginSuccess = MutableStateFlow(false)
     val loginSuccess: StateFlow<Boolean> = _loginSuccess
@@ -43,14 +43,14 @@ class AuthViewModel : ViewModel() {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    val uid = auth.currentUser?.uid ?: return@addOnCompleteListener
+                    val uid = auth.currentUser!!.uid
                     val randomName = generateRandomName()
 
                     val user = AppUser(uid = uid, email = email, displayName = randomName)
 
                     // Set success flag immediately
-                    _signupSuccess.value = true
                     _currentUser.value = user
+                    _signupSuccess.value = true
 
                     db.child("users").child(uid).setValue(user)
                         .addOnFailureListener { e ->
@@ -71,9 +71,9 @@ class AuthViewModel : ViewModel() {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    _loginSuccess.value = true  // Trigger navigation immediately
-                    val uid = auth.currentUser?.uid ?: return@addOnCompleteListener
-                    fetchUser(uid) // Still fetch user data in background
+                    val uid = auth.currentUser!!.uid
+                    _loginSuccess.value = true
+                    fetchUser(uid)
                 } else {
                     _error.value = task.exception?.message
                 }
