@@ -46,15 +46,14 @@ class AuthViewModel : ViewModel() {
                     email = email,
                     displayName = generateRandomName()
                 )
-
+                // Corrected: Save user under "users" collection
                 usersRef.document(uid).set(user)
-                    .addOnSuccessListener {
-                        _currentUser.value = user
-                        _signupSuccess.value = true
-                    }
-                    .addOnFailureListener { e -> _error.value = e.message }
+                _currentUser.value = user
+                _signupSuccess.value = true
             }
-            .addOnFailureListener { e -> _error.value = e.message }
+            .addOnFailureListener { e ->
+                _error.value = e.message
+            }
     }
 
     fun login(email: String, password: String) {
