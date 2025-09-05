@@ -14,7 +14,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.shades.MyAppNavigation.ScreenName
@@ -28,7 +27,6 @@ fun HomeScreen(
     authViewModel: AuthViewModel
 ) {
     val posts by PostRepository.posts.collectAsState()
-    val currentUser by authViewModel.currentUser.collectAsState()
 
     LaunchedEffect(Unit) {
         PostRepository.fetchPosts()
@@ -43,7 +41,7 @@ fun HomeScreen(
             items(posts) { post ->
                 PostCard(
                     username = post.username,
-                    image = null, // safer than forcing cast to Painter
+                    imageUrl = post.mediaUris.firstOrNull(), // safer than forcing cast to Painter
                     caption = post.caption
                 )
             }
