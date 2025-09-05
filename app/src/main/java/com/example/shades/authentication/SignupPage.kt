@@ -1,6 +1,6 @@
 package com.example.shades.authentication
 
-import AuthViewModel
+
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -45,15 +45,15 @@ fun SignUp(
     var newId by remember  { mutableStateOf("")}
     var newPass by remember  {mutableStateOf("")}
 
-    val loginSuccess by viewModel.currentUser.collectAsState()
+    val currentUser by viewModel.currentUser.collectAsState()
     val error by viewModel.error.collectAsState()
 
     val snackBarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
     // Navigate to HomeScreen immediately when user is set
-    LaunchedEffect(loginSuccess) {
-        if (loginSuccess != null) {
+    LaunchedEffect(currentUser) {
+        if (currentUser != null) {
             navController.navigate(ScreenName.HomeScreen.route) {
                 popUpTo(ScreenName.SignupPage.route) { inclusive = true }
                 launchSingleTop = true
@@ -61,13 +61,8 @@ fun SignUp(
         }
     }
 
-    // Show error snackbar
     LaunchedEffect(error) {
-        error?.let {
-            coroutineScope.launch {
-                snackBarHostState.showSnackbar("Error: $it")
-            }
-        }
+        error?.let { coroutineScope.launch { snackBarHostState.showSnackbar(it) } }
     }
 
     Column(

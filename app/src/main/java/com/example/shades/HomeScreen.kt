@@ -18,28 +18,32 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.shades.MyAppNavigation.ScreenName
+import com.example.shades.authentication.AuthViewModel
 import com.example.shades.cards.PostCard
 import com.example.shades.data.PostRepository
 
 @Composable
 fun HomeScreen(
-    navController: NavController
+    navController: NavController,
+    authViewModel: AuthViewModel
 ) {
     val posts by PostRepository.posts.collectAsState()
+    val currentUser by authViewModel.currentUser.collectAsState()
+
     LaunchedEffect(Unit) {
         PostRepository.fetchPosts()
     }
+
     Box(
         modifier = Modifier
-            .fillMaxSize(1f)
+            .fillMaxSize()
             .padding(50.dp)
-
     ) {
         LazyColumn {
             items(posts) { post ->
                 PostCard(
                     username = post.username,
-                    image = post.mediaUris.firstOrNull() as Painter?,
+                    image = null, // safer than forcing cast to Painter
                     caption = post.caption
                 )
             }

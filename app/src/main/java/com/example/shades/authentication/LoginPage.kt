@@ -1,6 +1,5 @@
 package com.example.shades.authentication
 
-import AuthViewModel
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -28,14 +27,15 @@ fun LogIn(
     var pass by remember { mutableStateOf("") }
 
     val loginSuccess by viewModel.loginSuccess.collectAsState()
+    val currentUser by viewModel.currentUser.collectAsState()
     val error by viewModel.error.collectAsState()
 
     val snackBarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    // Navigate to HomeScreen if login succeeds
-    LaunchedEffect(loginSuccess) {
-        if (loginSuccess) {
+    // ✅ Navigate only when login succeeded AND user profile is loaded
+    LaunchedEffect(loginSuccess, currentUser) {
+        if (loginSuccess && currentUser != null) {
             navController.navigate(ScreenName.HomeScreen.route) {
                 popUpTo(ScreenName.LoginPage.route) { inclusive = true }
                 launchSingleTop = true
@@ -46,9 +46,7 @@ fun LogIn(
     // Show error snackbar
     LaunchedEffect(error) {
         error?.let {
-            coroutineScope.launch {
-                snackBarHostState.showSnackbar(it)
-            }
+            coroutineScope.launch { snackBarHostState.showSnackbar(it) }
         }
     }
 

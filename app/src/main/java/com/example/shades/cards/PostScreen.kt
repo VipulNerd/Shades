@@ -1,6 +1,6 @@
 package com.example.shades.cards
 
-import AuthViewModel
+
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -31,6 +31,7 @@ import coil.compose.rememberAsyncImagePainter
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.shades.MyAppNavigation.ScreenName
+import com.example.shades.authentication.AuthViewModel
 import kotlinx.coroutines.launch
 
 @Composable
@@ -41,6 +42,9 @@ fun PostScreen(
 ){
     val currentUsername by authViewModel.currentUser.collectAsState()
     val username = currentUsername?.displayName ?: "Anonymous"
+    val isButtonEnabled = username.isNotBlank() && (viewModel.description.isNotEmpty() || viewModel.mediaUris.isNotEmpty())
+
+
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -118,6 +122,10 @@ fun PostScreen(
             Spacer(modifier = Modifier.height(32.dp))
             Button(
                 onClick = {
+                    if (username.isBlank()) {
+                        coroutineScope.launch { snackBarHostState.showSnackbar("Loading user, please wait") }
+                        return@Button
+                    }
                     coroutineScope.launch {
                         viewModel.submitPost(username) { success, errorMsg ->
                             if (success) {
@@ -135,7 +143,7 @@ fun PostScreen(
                         }
                     }
                 },
-                enabled = viewModel.description.isNotEmpty() || viewModel.mediaUris.isNotEmpty()
+                enabled = isButtonEnabled
             ) {
                 Text("Post")
             }
