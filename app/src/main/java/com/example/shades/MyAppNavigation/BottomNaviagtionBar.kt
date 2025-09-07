@@ -6,8 +6,10 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.PostAdd
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -27,7 +29,9 @@ fun BottomNavigationBar(
     // If no user, don't show the bottom bar
     if (currentUser == null) return
 
-    NavigationBar {
+    NavigationBar(
+        containerColor = MaterialTheme.colorScheme.surface
+    ) {
         NavigationBarItem(
             icon = { Icon(Icons.Filled.Home, contentDescription = "Home") },
             label = { Text("Home") },
@@ -37,7 +41,13 @@ fun BottomNavigationBar(
                     launchSingleTop = true
                     restoreState = true
                 }
-            }
+            },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = MaterialTheme.colorScheme.primary, // red
+                selectedTextColor = MaterialTheme.colorScheme.primary,
+                unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), // gray
+                unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
         )
 
         NavigationBarItem(
@@ -49,7 +59,13 @@ fun BottomNavigationBar(
                     launchSingleTop = true
                     restoreState = true
                 }
-            }
+            },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = MaterialTheme.colorScheme.primary, // red
+                selectedTextColor = MaterialTheme.colorScheme.primary,
+                unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), // gray
+                unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
         )
 
         NavigationBarItem(
@@ -62,7 +78,13 @@ fun BottomNavigationBar(
                     popUpTo(ScreenName.HomeScreen.route) { inclusive = true }
                     launchSingleTop = true
                 }
-            }
+            },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = MaterialTheme.colorScheme.primary, // red
+                selectedTextColor = MaterialTheme.colorScheme.primary,
+                unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), // gray
+                unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
         )
         NavigationBarItem(
             icon = { Icon(Icons.Filled.PostAdd, contentDescription = "Post") },
@@ -73,7 +95,13 @@ fun BottomNavigationBar(
                     launchSingleTop = true
                     restoreState = true
                 }
-            }
+            },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = MaterialTheme.colorScheme.primary, // red
+                selectedTextColor = MaterialTheme.colorScheme.primary,
+                unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), // gray
+                unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
         )
     }
 }

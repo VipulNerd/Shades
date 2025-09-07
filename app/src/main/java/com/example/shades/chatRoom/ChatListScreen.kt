@@ -2,14 +2,19 @@ package com.example.shades.chatRoom
 
 import android.util.Log
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -63,7 +68,6 @@ fun ChatListScreen(
                         val lastMessage = chatDoc.getString("lastMessage") ?: ""
                         var otherName by remember(otherId) { mutableStateOf(otherId ?: "Unknown") }
 
-                        // Fetch display name only when otherId changes and exists
                         LaunchedEffect(otherId) {
                             if (!otherId.isNullOrEmpty()) {
                                 val userSnap = FirebaseFirestore.getInstance()
@@ -75,42 +79,33 @@ fun ChatListScreen(
                             }
                         }
 
-                        androidx.compose.foundation.layout.Row(
+                        Surface(
                             modifier = Modifier
+                                .fillMaxWidth()
                                 .clickable {
-                                    Log.d(
-                                        "ChatList",
-                                        "Click: participants=$participants, otherId=$otherId, otherName=$otherName"
-                                    )
                                     if (!otherId.isNullOrEmpty()) {
-                                        try {
-                                            navController.navigate(
-                                                ScreenName.ChatRoomScreen.createRouteWithUser(
-                                                    otherId,
-                                                    otherName
-                                                )
+                                        navController.navigate(
+                                            ScreenName.ChatRoomScreen.createRouteWithUser(
+                                                otherId,
+                                                otherName
                                             )
-                                        } catch (e: Exception) {
-                                            // prevent crash — optionally log to Logcat
-                                            Log.e("ChatList", "navigate to chatroom failed", e)
-                                        }
+                                        )
                                     }
                                 }
-                                .padding(12.dp)
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            shape = MaterialTheme.shapes.medium,
+                            tonalElevation = 2.dp
                         ) {
-                            Column {
+                            Column(modifier = Modifier.padding(12.dp)) {
                                 Text(
                                     text = otherName,
-                                    style = androidx.compose.ui.text.TextStyle.Default.copy(
-                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-                                    )
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.primary
                                 )
                                 Text(
                                     text = lastMessage,
-                                    style = androidx.compose.ui.text.TextStyle.Default.copy(
-                                        fontSize = androidx.compose.ui.unit.TextUnit.Unspecified,
-                                        color = androidx.compose.ui.graphics.Color.Gray
-                                    )
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                                 )
                             }
                         }

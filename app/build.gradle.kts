@@ -59,6 +59,8 @@ dependencies {
 
     implementation(libs.firebase.firestore)
     implementation(libs.androidx.compose.runtime)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.foundation)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

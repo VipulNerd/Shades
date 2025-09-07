@@ -9,11 +9,15 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.navigation.NavController
 import com.example.shades.MyAppNavigation.BottomNavigationBar
 import com.example.shades.MyAppNavigation.ScreenName
@@ -42,16 +46,27 @@ fun HomeScreen(
         ) {
             LazyColumn {
                 items(posts) { post ->
-                    PostCard(
-                        username = post.username,
-                        imageUrl = post.mediaUris.firstOrNull(),
-                        caption = post.caption,
-                        oneUsernameClick = {
-                            navController.navigate(
-                                ScreenName.ChatRoomScreen.createRouteWithUser(post.authorId, post.username)
-                            )
-                        }
-                    )
+                    Surface(
+                        modifier = Modifier.padding(8.dp),
+                        color = MaterialTheme.colorScheme.surface,
+                        tonalElevation = 4.dp,
+                        shadowElevation = 4.dp,
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        PostCard(
+                            username = post.username,
+                            imageUrl = post.mediaUris.firstOrNull(),
+                            caption = post.caption,
+                            onUsernameClick = {
+                                navController.navigate(
+                                    ScreenName.ChatRoomScreen.createRouteWithUser(
+                                        post.authorId,
+                                        post.username
+                                    )
+                                )
+                            }
+                        )
+                    }
                 }
             }
         }

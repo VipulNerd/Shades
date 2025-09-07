@@ -3,18 +3,13 @@ package com.example.shades.chatRoom
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -24,7 +19,6 @@ import com.example.shades.data.ChatRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,6 +36,7 @@ fun ChatRoomScreen(
     var text by remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
     var registration by remember { mutableStateOf<ListenerRegistration?>(null) }
+    val listState = rememberLazyListState()
 
     LaunchedEffect(otherId) {
         registration?.remove()
@@ -57,12 +52,18 @@ fun ChatRoomScreen(
             }
     }
 
-    DisposableEffect(Unit) {
-        onDispose {
-            registration?.remove()
+    // Auto-scroll to bottom when new messages arrive
+    LaunchedEffect(messages.size) {
+        if (messages.isNotEmpty()) {
+            listState.animateScrollToItem(messages.lastIndex)
         }
     }
-   Scaffold(
+
+    DisposableEffect(Unit) {
+        onDispose { registration?.remove() }
+    }
+
+    Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Chat with $otherName") },
@@ -73,21 +74,48 @@ fun ChatRoomScreen(
                 }
             )
         }
-    ) { it ->
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it)
+                .padding(innerPadding)
                 .padding(8.dp)
         ) {
-            LazyColumn(modifier = Modifier.weight(1f)) {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
                 items(messages) { msg ->
                     val senderId = msg["senderId"] as? String ?: ""
                     val messageText = msg["message"] as? String ?: ""
-                    Text(
-                        text = if (senderId == myId) "You: $messageText" else "$otherName: $messageText",
-                        modifier = Modifier.padding(8.dp)
-                    )
+
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = if (senderId == myId) Alignment.CenterEnd else Alignment.CenterStart
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (senderId == myId)
+                                MaterialTheme.colorScheme.primary
+                            else
+                                MaterialTheme.colorScheme.surfaceVariant,
+                            contentColor = if (senderId == myId)
+                                MaterialTheme.colorScheme.onPrimary
+                            else
+                                MaterialTheme.colorScheme.onSurface,
+                            shadowElevation = 2.dp,
+                            modifier = if (senderId == myId)
+                                Modifier.padding(start = 48.dp, end = 4.dp)
+                            else
+                                Modifier.padding(start = 4.dp, end = 48.dp)
+                        ) {
+                            Text(
+                                text = messageText,
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        }
+                    }
                 }
             }
 
@@ -98,7 +126,9 @@ fun ChatRoomScreen(
                 OutlinedTextField(
                     value = text,
                     onValueChange = { text = it },
-                    modifier = Modifier.weight(1f)
+                    placeholder = { Text("Type a message…") },
+                    modifier = Modifier.weight(1f),
+                    maxLines = 4
                 )
                 Button(onClick = {
                     val toSend = text.trim()
