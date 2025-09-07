@@ -115,6 +115,12 @@ fun SignUp(
         }
         Spacer(modifier = Modifier.padding(10.dp))
         SnackbarHost(hostState = snackBarHostState)
+        FilledTonalButton(
+            onClick = { navController.navigate(ScreenName.LoginPage.route) },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = "LogIn")
+        }
     }
 }
 
