@@ -7,15 +7,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
-import androidx.compose.material3.Text
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.shades.MyAppNavigation.BottomNavigationBar
 import com.example.shades.MyAppNavigation.ScreenName
 import com.example.shades.authentication.AuthViewModel
 import com.example.shades.cards.PostCard
@@ -32,26 +32,28 @@ fun HomeScreen(
         PostRepository.fetchPosts()
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(50.dp)
-    ) {
-        LazyColumn {
-            items(posts) { post ->
-                PostCard(
-                    username = post.username,
-                    imageUrl = post.mediaUris.firstOrNull(), // safer than forcing cast to Painter
-                    caption = post.caption
-                )
-            }
-        }
-
-        Button(
-            onClick = { navController.navigate(ScreenName.PostScreen.route) },
-            modifier = Modifier.align(Alignment.BottomEnd).padding(10.dp)
+    Scaffold(
+        bottomBar = { BottomNavigationBar(navController, currentRoute = ScreenName.HomeScreen.route) }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
         ) {
-            Text("Post")
+            LazyColumn {
+                items(posts) { post ->
+                    PostCard(
+                        username = post.username,
+                        imageUrl = post.mediaUris.firstOrNull(),
+                        caption = post.caption,
+                        oneUsernameClick = {
+                            navController.navigate(
+                                ScreenName.ChatRoomScreen.createRouteWithUser(post.authorId, post.username)
+                            )
+                        }
+                    )
+                }
+            }
         }
     }
 }

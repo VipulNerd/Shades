@@ -87,7 +87,7 @@ class AuthViewModel : ViewModel() {
     }
 
     fun logout() {
-        auth.signOut()
+        FirebaseAuth.getInstance().signOut()
         _currentUser.value = null
         _signupSuccess.value = false
         _loginSuccess.value = false

@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.shades.MyAppNavigation.BottomNavigationBar
 import com.example.shades.MyAppNavigation.ScreenName
 import com.example.shades.authentication.AuthViewModel
 import kotlinx.coroutines.launch
@@ -39,9 +40,9 @@ fun PostScreen(
     navController: NavController,
     authViewModel: AuthViewModel = viewModel(),
     viewModel: PostViewModel = viewModel()
-){
-    val currentUsername by authViewModel.currentUser.collectAsState()
-    val username = currentUsername?.displayName ?: "Anonymous"
+) {
+    val currentUser by authViewModel.currentUser.collectAsState()
+    val username = currentUser?.displayName ?: "Anonymous"
     val isButtonEnabled = username.isNotBlank() && (viewModel.description.isNotEmpty() || viewModel.mediaUris.isNotEmpty())
 
 
@@ -64,6 +65,7 @@ fun PostScreen(
     val coroutineScope= rememberCoroutineScope()
 
     Scaffold(
+        bottomBar = { BottomNavigationBar(navController, currentRoute = ScreenName.PostScreen.route) },
         snackbarHost = { SnackbarHost(snackBarHostState) }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
@@ -122,24 +124,20 @@ fun PostScreen(
             Spacer(modifier = Modifier.height(32.dp))
             Button(
                 onClick = {
-                    if (username.isBlank()) {
+                    if (currentUser == null || username.isBlank()) {
                         coroutineScope.launch { snackBarHostState.showSnackbar("Loading user, please wait") }
                         return@Button
                     }
                     coroutineScope.launch {
-                        viewModel.submitPost(username) { success, errorMsg ->
-                            if (success) {
-                                coroutineScope.launch {
-                                    snackBarHostState.showSnackbar("Post uploaded successfully!")
-                                    navController.navigate(ScreenName.HomeScreen.route) {
-                                        popUpTo(ScreenName.HomeScreen.route) { inclusive = true }
-                                    }
-                                }
-                            } else {
-                                coroutineScope.launch {
-                                    snackBarHostState.showSnackbar(errorMsg ?: "Failed to upload post!")
-                                }
-                            }
+                        val success = viewModel.submitPost(
+                            authorId = currentUser!!.uid,
+                            username = username
+                        )
+                        if (success) {
+                            snackBarHostState.showSnackbar("Post uploaded successfully!")
+                            navController.popBackStack()
+                        } else {
+                            snackBarHostState.showSnackbar("Failed to upload post!")
                         }
                     }
                 },

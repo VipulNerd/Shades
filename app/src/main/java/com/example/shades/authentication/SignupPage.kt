@@ -13,7 +13,12 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -30,6 +35,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -44,7 +51,7 @@ fun SignUp(
 ){
     var newId by remember  { mutableStateOf("")}
     var newPass by remember  {mutableStateOf("")}
-
+    var passwordVisible by remember { mutableStateOf(false) }
     val currentUser by viewModel.currentUser.collectAsState()
     val error by viewModel.error.collectAsState()
 
@@ -88,7 +95,16 @@ fun SignUp(
             value = newPass,
             onValueChange = { newPass = it },
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Password),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = if(passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                val description = if (passwordVisible) "Hide password" else "Show password"
+
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(imageVector = image, contentDescription = description)
+                }
+            }
         )
         Spacer(modifier = Modifier.padding(10.dp))
         FilledTonalButton(
@@ -127,7 +143,9 @@ fun NewPassEntry(
     value: String,
     onValueChange: (String) -> Unit,
     keyboardOptions: KeyboardOptions,
-    modifier: Modifier
+    modifier: Modifier,
+    visualTransformation: VisualTransformation,
+    trailingIcon: @Composable (() -> Unit)
 ){
     TextField(
         label = {Text(stringResource(id = pass))},
@@ -136,5 +154,7 @@ fun NewPassEntry(
         keyboardOptions = keyboardOptions,
         singleLine = true,
         modifier = modifier,
+        visualTransformation = visualTransformation,
+        trailingIcon = trailingIcon
     )
 }

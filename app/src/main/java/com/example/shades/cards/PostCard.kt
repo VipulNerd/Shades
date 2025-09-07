@@ -1,5 +1,6 @@
 package com.example.shades.cards
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -14,13 +15,15 @@ import coil.compose.AsyncImage
 fun PostCard(
     username: String,
     imageUrl: String? = null,
-    caption: String? = null
+    caption: String? = null,
+    oneUsernameClick: () -> Unit
 ) {
     Column {
         // Username
         Text(
             text = username,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.clickable{ oneUsernameClick() }
         )
 
         // Image from Firestore (if available)

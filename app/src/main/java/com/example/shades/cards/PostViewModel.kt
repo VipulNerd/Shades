@@ -30,32 +30,33 @@ class PostViewModel : ViewModel() {
     fun addMediaUris(newMediaUri: Uri) {
         mediaUris = mediaUris + newMediaUri
     }
-
-    suspend fun submitPost(username: String, callback: (success: Boolean, errorMsg: String?) -> Unit) {
-        try {
+    suspend fun submitPost(authorId: String, username: String): Boolean {
+        return try {
             val postId = UUID.randomUUID().toString()
             val postData = hashMapOf(
+                "postId" to postId,
+                "authorId" to authorId,
                 "username" to username,
                 "caption" to description,
                 "mediaUris" to mediaUris.map { it.toString() },
                 "timestamp" to System.currentTimeMillis()
             )
 
-            db.collection("posts")
-                .document(postId)
+            db.collection("posts").document(postId)
                 .set(postData, SetOptions.merge())
-                .await() // Wait for completion
+                .await()
 
-            // Reset state
             description = ""
             mediaUris = emptyList()
-            callback(true, null)
+            true
         } catch (e: Exception) {
-            callback(false, e.message)
+            false
         }
     }
 
     data class Post(
+        val postId: String = "",
+        val authorId: String = "",
         val username: String = "",
         val mediaUris: List<String> = emptyList(),
         val caption: String? = null,
