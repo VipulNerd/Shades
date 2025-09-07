@@ -38,8 +38,8 @@ Shades is a social communication and media sharing Android application built usi
 4. Sync Gradle and build the project.
 5. Run on an Android device or emulator with Android 12+.
 
-## Screenshots / Demo
-![Demo GIF](https://link-to-your-demo.gif)
+## App Video
+https://github.com/user-attachments/assets/1a25493e-19a3-424f-82d1-69b834c99143
 
 ## Future Improvements
 - Group chat functionality.
@@ -49,3 +49,4 @@ Shades is a social communication and media sharing Android application built usi
 - Profile customization and avatars.
 
 ## License
+Apache-2.0 license
